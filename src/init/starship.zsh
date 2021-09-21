@@ -26,7 +26,7 @@ fi
 # Will be run before every prompt draw
 starship_precmd() {
     # Save the status, because commands in this pipeline will change $?
-    STARSHIP_CMD_STATUS=$?
+    STARSHIP_CMD_STATUS=$? STARSHIP_PIPE_STATUS=(${pipestatus[@]})
 
     # Compute cmd_duration, if we have a time to consume, otherwise clear the
     # previous duration
@@ -56,7 +56,7 @@ starship_preexec() {
 if [[ -z ${precmd_functions[(re)starship_precmd]} ]]; then
     precmd_functions+=(starship_precmd)
 fi
-if [[ -z ${preexec_function[(re)starship_preexec]} ]]; then
+if [[ -z ${preexec_functions[(re)starship_preexec]} ]]; then
     preexec_functions+=(starship_preexec)
 fi
 
@@ -66,15 +66,14 @@ starship_zle-keymap-select() {
 }
 
 ## Check for existing keymap-select widget.
-local existing_keymap_select_fn=$widgets[zle-keymap-select];
 # zle-keymap-select is a special widget so it'll be "user:fnName" or nothing. Let's get fnName only.
-existing_keymap_select_fn=${existing_keymap_select_fn//user:};
-if [[ -z $existing_keymap_select_fn ]]; then
+__starship_preserved_zle_keymap_select=${widgets[zle-keymap-select]#user:}
+if [[ -z $__starship_preserved_zle_keymap_select ]]; then
     zle -N zle-keymap-select starship_zle-keymap-select;
 else
     # Define a wrapper fn to call the original widget fn and then Starship's.
     starship_zle-keymap-select-wrapped() {
-        $existing_keymap_select_fn "$@";
+        $__starship_preserved_zle_keymap_select "$@";
         starship_zle-keymap-select "$@";
     }
     zle -N zle-keymap-select starship_zle-keymap-select-wrapped;
@@ -92,4 +91,5 @@ export STARSHIP_SESSION_KEY=${STARSHIP_SESSION_KEY:0:16}; # Trim to 16-digits if
 VIRTUAL_ENV_DISABLE_PROMPT=1
 
 setopt promptsubst
-PROMPT='$(::STARSHIP:: prompt --keymap="$KEYMAP" --status="$STARSHIP_CMD_STATUS" --cmd-duration="$STARSHIP_DURATION" --jobs="$STARSHIP_JOBS_COUNT")'
+PROMPT='$(::STARSHIP:: prompt --keymap="$KEYMAP" --status="$STARSHIP_CMD_STATUS" --pipestatus ${STARSHIP_PIPE_STATUS[@]} --cmd-duration="$STARSHIP_DURATION" --jobs="$STARSHIP_JOBS_COUNT")'
+RPROMPT='$(::STARSHIP:: prompt --right --keymap="$KEYMAP" --status="$STARSHIP_CMD_STATUS" --pipestatus ${STARSHIP_PIPE_STATUS[@]} --cmd-duration="$STARSHIP_DURATION" --jobs="$STARSHIP_JOBS_COUNT")'

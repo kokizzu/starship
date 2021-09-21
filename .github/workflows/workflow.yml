@@ -16,10 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup | Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.4
 
       - name: Setup | Rust
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@v1.0.7
         with:
           toolchain: stable
           override: true
@@ -41,24 +41,17 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Setup | Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.4
 
-      # Cache files between builds
-      # - name: Setup | Cache Cargo
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: |
-      #       ~/.cargo/registry
-      #       ~/.cargo/git
-      #       target
-      #     key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Setup | Cache
+        uses: Swatinem/rust-cache@v1
 
       - name: Setup | libdbus (ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get install libdbus-1-dev
 
       - name: Setup | Rust
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@v1.0.7
         with:
           toolchain: stable
           override: true
@@ -66,7 +59,7 @@ jobs:
           components: clippy
 
       - name: Build | Lint
-        uses: actions-rs/cargo@v1
+        uses: actions-rs/cargo@v1.0.3
         with:
           command: clippy
           args: --workspace --locked --all-targets --all-features -- -D clippy::all
@@ -77,20 +70,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup | Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.4
 
-      # Cache files between builds
-      # - name: Setup | Cache Cargo
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: |
-      #       ~/.cargo/registry
-      #       ~/.cargo/git
-      #       target
-      #     key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Setup | Cache
+        uses: Swatinem/rust-cache@v1
 
       - name: Setup | Rust
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@v1.0.7
         with:
           toolchain: stable
           profile: minimal
@@ -112,25 +98,18 @@ jobs:
         rust: [stable, nightly]
     steps:
       - name: Setup | Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.4
 
       - name: Setup | libdbus (ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get install libdbus-1-dev
 
-      # Cache files between builds
-      # - name: Setup | Cache Cargo
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: |
-      #       ~/.cargo/registry
-      #       ~/.cargo/git
-      #       target
-      #     key: ${{ runner.os }}-${{ matrix.rust }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Setup | Cache
+        uses: Swatinem/rust-cache@v1
 
       # Install all the required dependencies for testing
       - name: Setup | Rust
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@v1.0.7
         with:
           toolchain: ${{ matrix.rust }}
           profile: minimal

@@ -4,11 +4,12 @@ on:
     - cron: "0 * * * *"
 jobs:
   auto_merge:
+    if: (github.event_name == 'schedule' && github.repository == 'starship/starship') || (github.event_name != 'schedule')
     name: Auto-merge Dependabot PRs
     runs-on: ubuntu-latest
     steps:
-      - uses: koj-co/dependabot-pr-action@v1.0.0
+      - uses: akheron/dependabot-cron-action@d020867c009553e279f0200b621459444828a9b0
         with:
           token: ${{ secrets.DEPENDABOT_GITHUB_API_TOKEN }}
-          merge-minor: true
-          merge-patch: true
+          auto-merge: "minor"
+          merge-method: "squash"
